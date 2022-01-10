@@ -42,23 +42,20 @@ export function matchImageSnapshotCommand(defaultOptions) {
           diffPixelCount,
           diffOutputPath,
         }) => {
+          const message = diffSize
+            ? `Image size (${imageDimensions.baselineWidth}x${
+                imageDimensions.baselineHeight
+              }) different than saved snapshot size (${
+                imageDimensions.receivedWidth
+              }x${
+                imageDimensions.receivedHeight
+              }).\nSee diff for details: ${diffOutputPath}`
+            : `Image was ${diffRatio *
+                100}% different from saved snapshot with ${diffPixelCount} different pixels.\nSee diff for details: ${diffOutputPath}`;
           if (!pass && !added && !updated) {
-            const message = diffSize
-              ? `Image size (${imageDimensions.baselineWidth}x${
-                  imageDimensions.baselineHeight
-                }) different than saved snapshot size (${
-                  imageDimensions.receivedWidth
-                }x${
-                  imageDimensions.receivedHeight
-                }).\nSee diff for details: ${diffOutputPath}`
-              : `Image was ${diffRatio *
-                  100}% different from saved snapshot with ${diffPixelCount} different pixels.\nSee diff for details: ${diffOutputPath}`;
-
-            if (failOnSnapshotDiff) {
-              throw new Error(message);
-            } else {
-              Cypress.log({ message });
-            }
+            Cypress.log({ message });
+          } else if (!isNaN(diffRatio)) {
+            throw new Error(`Image was too similar, no change detected. (${message})`);
           }
         }
       );
